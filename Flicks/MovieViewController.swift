@@ -60,6 +60,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                     self.movies = dataDictionary["results"] as! [NSDictionary]
                     self.tableView.reloadData()
                 }
+                self.filteredMovies = self.movies!
             } else {
                 label.text = "Network error"
                 
@@ -72,7 +73,6 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                 self.view.addSubview(label)
             }
             MBProgressHUD.hide(for: self.view, animated: true)
-            
             // ... Use the new data to update the data source ...
             
             // Reload the tableView now that there is new data
@@ -85,8 +85,8 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if let movies = movies {
-            return movies.count
+        if filteredMovies != nil {
+            return filteredMovies.count
         } else {
             return 0
         }
@@ -97,7 +97,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath) as! MovieCell
         
-        let movie = movies![indexPath.row]
+        let movie = filteredMovies[indexPath.row]
         let title = movie["title"] as! String
         let overview = movie["overview"] as! String
         
@@ -145,10 +145,10 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        self.movies = searchText.isEmpty ? self.movies : self.movies?.filter({ (data: NSDictionary) -> Bool in
+        self.filteredMovies = searchText.isEmpty ? movies!: (movies?.filter({ (data: NSDictionary) -> Bool in
             let result = data["title"] as! String
             return result.range(of: searchText, options: .caseInsensitive) != nil
-        })
+        }))!
         searchBar.showsCancelButton = true
         tableView.reloadData()
     }
